@@ -11,11 +11,14 @@ using namespace std;
 #define SIZE 10
 enum Grid { Empty, PLAYER, MONSTER, WALL, EXIT };
 enum  Direction { DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT };
-struct Position
-{
+struct Position {
 	int x, y;
+};
+struct Object
+{
+	Position pos;
 	Direction dir;
-}  playerPosition, monsterPosition, exitPosition;
+}  playerObj, monsterObj, exitObj;
 
 int MonsterAngle = 0;
 int MonsterDistance = 0;
@@ -49,7 +52,7 @@ Grid map[SIZE][SIZE] = { // 10x10 matrix
 };
 
 
-int GetSoundAngleFromPositions(Position p1, Position p2)
+int GetSoundAngleFromPositions(Object o1, Object o2)
 {
 	/*
 	 0 = directly in front.
@@ -57,11 +60,11 @@ int GetSoundAngleFromPositions(Position p1, Position p2)
 	 180 = directly behind.
 	 270 = directly to the left.
 	 */
-	int deltaX = p2.x - p1.x;
-	int deltaY = p2.y - p1.y;
+	int deltaX = o2.pos.x - o1.pos.x;
+	int deltaY = o2.pos.y - o1.pos.y;
 	auto angleInDegrees = 90 + atan2(deltaY, deltaX) * 180 / M_PI;
 	int fixedAngle =  static_cast<int>(abs(angleInDegrees)) % 360;
-	switch (playerPosition.dir)
+	switch (playerObj.dir)
 	{
 		case DIR_RIGHT:	fixedAngle -= 90; break;
 		case DIR_DOWN:	fixedAngle -= 180; break;
@@ -77,10 +80,10 @@ int GetSoundAngleFromPositions(Position p1, Position p2)
 	}
 	return static_cast<int>(fixedAngle);
 }
-int GetSoundDistanceFromPositions(Position p1, Position p2, int angle)
+int GetSoundDistanceFromPositions(Object o1, Object o2, int angle)
 {
-	int x = abs(p1.x - p2.x);
-	int y = abs(p1.y - p2.y);
+	int x = abs(o1.pos.x - o2.pos.x);
+	int y = abs(o1.pos.y - o2.pos.y);
 	double distance = abs(sqrt(pow(x, 2) + pow(y, 2)));
 	auto soundDistance = (((distance) * 255) / MaxSoundDistance);
 
@@ -94,10 +97,10 @@ int GetSoundDistanceFromPositions(Position p1, Position p2, int angle)
 }
 void updatePositions()
 {
-	MonsterAngle = GetSoundAngleFromPositions(playerPosition, monsterPosition);
-	MonsterDistance = GetSoundDistanceFromPositions(playerPosition, monsterPosition, MonsterAngle);
-	WaterfallAngle = GetSoundAngleFromPositions(playerPosition, exitPosition);
-	WaterfallDistance = GetSoundDistanceFromPositions(playerPosition, exitPosition, WaterfallAngle);
+	MonsterAngle = GetSoundAngleFromPositions(playerObj, monsterObj);
+	MonsterDistance = GetSoundDistanceFromPositions(playerObj, monsterObj, MonsterAngle);
+	WaterfallAngle = GetSoundAngleFromPositions(playerObj, exitObj);
+	WaterfallDistance = GetSoundDistanceFromPositions(playerObj, exitObj, WaterfallAngle);
 	monster.SetPosition(MonsterAngle, MonsterDistance);
 	waterfall.SetPosition(WaterfallAngle, WaterfallDistance);
 }
@@ -111,30 +114,29 @@ void PrintMap()
 		}
 		std::cout << endl;
 	}
-
 	cout << endl << endl;
 }
-Grid GetGridBox(Position* pos)
+Grid GetGridBox(Object* obj)
 {
-	if(pos->x < 0 || pos->x >= SIZE || pos->y < 0 || pos->y >= SIZE)
+	if(obj->pos.x < 0 || obj->pos.x >= SIZE || obj->pos.y < 0 || obj->pos.y >= SIZE)
 	{
 		return WALL;
 	}
-	return map[pos->y][pos->x];
+	return map[obj->pos.y][obj->pos.x];
 }
-Position* GetPlayerInput()
+Object* GetPlayerInput()
 {
-	Position* position = NULL;
-	SDL_Event test_event;
+	Object* obj = NULL;
+	SDL_Event event;
 	SDL_Scancode key;
-	while (SDL_PollEvent(&test_event)) {
-		switch (test_event.type) {
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
 			case SDL_KEYDOWN:
-				key = test_event.key.keysym.scancode;
-				position = new Position();
-				position->x = playerPosition.x;
-				position->y = playerPosition.y;
-				position->dir = playerPosition.dir;
+				key = event.key.keysym.scancode;
+				obj = new Object();
+				obj->pos.x = playerObj.pos.x;
+				obj->pos.y = playerObj.pos.y;
+				obj->dir = playerObj.dir;
 
 				if (key == SDL_SCANCODE_ESCAPE) {
 					ExitGame = true;
@@ -142,18 +144,18 @@ Position* GetPlayerInput()
 				
 				if (key == SDL_SCANCODE_UP)
 				{
-					position->y -= 1;
+					obj->pos.y -= 1;
 				}			
 				else if (key == SDL_SCANCODE_LEFT)
 				{
-					position->x -= 1;
+					obj->pos.x -= 1;
 				}
 				else if (key == SDL_SCANCODE_RIGHT)
 				{
-					position->x += 1;
+					obj->pos.x += 1;
 				}
 				else if (key == SDL_SCANCODE_DOWN) {
-					position->y += 1;
+					obj->pos.y += 1;
 				}
 				break;
 
@@ -162,20 +164,20 @@ Position* GetPlayerInput()
 				break;
 			}
 	}
-	return position;
+	return obj;
 }
-void UpdatePlayerPosition(Position* newPos)
+void UpdatePlayerPosition(Object* newObj)
 {
-	map[playerPosition.y][playerPosition.x] = Empty;
-	playerPosition = *newPos;
-	map[playerPosition.y][playerPosition.x] = PLAYER;
+	map[playerObj.pos.y][playerObj.pos.x] = Empty;
+	playerObj = *newObj;
+	map[playerObj.pos.y][playerObj.pos.x] = PLAYER;
 	updatePositions();
 }
-void UpdateMonsterPosition(Position* newPos)
+void UpdateMonsterPosition(Object* newObj)
 {
-	map[monsterPosition.y][monsterPosition.x] = Empty;
-	monsterPosition = *newPos;
-	map[monsterPosition.y][monsterPosition.x] = MONSTER;
+	map[monsterObj.pos.y][monsterObj.pos.x] = Empty;
+	monsterObj = *newObj;
+	map[monsterObj.pos.y][monsterObj.pos.x] = MONSTER;
 	updatePositions();
 }
 void SetGameOver()
@@ -191,56 +193,47 @@ void ChangeMonsterPosition()
 	bool validTile = false;
 	do
 	{
-		int x, y;
-		Direction dir;
+		Object newPosition = monsterObj;
 		int movement = rand() % 7;
 		switch (movement)
 		{
 			case 0:
-				x = -1;
-				y = -1;
-				dir = DIR_LEFT;
+				newPosition.pos.x -= 1;
+				newPosition.pos.y -= 1;
+				newPosition.dir = DIR_LEFT;
 			break;
 			case 1:
-				x = 0;
-				y = -1;
-				dir = DIR_UP;
+				newPosition.pos.y -= 1;
+				newPosition.dir = DIR_UP;
 			break;
 			case 2:
-				x = 1;
-				y = -1;
-				dir = DIR_RIGHT;
+				newPosition.pos.x += 1;
+				newPosition.pos.y -= 1;
+				newPosition.dir = DIR_RIGHT;
 			break;
 			case 3:
-				x = -1;
-				y = 0;
-				dir = DIR_LEFT;
+				newPosition.pos.x -= 1;
+				newPosition.dir = DIR_LEFT;
 			break;
 			case 4:
-				x = 1;
-				y = 0;
-				dir = DIR_RIGHT;
+				newPosition.pos.x += 1;
+				newPosition.dir = DIR_RIGHT;
 			break;
 			case 5:
-				x = -1;
-				y = 1;
-				dir = DIR_LEFT;
+				newPosition.pos.x -= 1;
+				newPosition.pos.y += 1;
+				newPosition.dir = DIR_LEFT;
 			break;
 			case 6:
-				x = 0;
-				y = 1;
-				dir = DIR_DOWN;
+				newPosition.pos.y += 1;
+				newPosition.dir = DIR_DOWN;
 			break;
 			case 7:
-				x = 1;
-				y = 1;
-				dir = DIR_RIGHT;
+				newPosition.pos.x += 1;
+				newPosition.pos.y += 1;
+				newPosition.dir = DIR_RIGHT;
 			break;
 		}
-		Position newPosition = monsterPosition;
-		newPosition.x += x;
-		newPosition.y += y;
-		newPosition.dir = dir;
 		auto newPlace = GetGridBox(&newPosition);
 		if(newPlace == Empty)
 		{
@@ -257,18 +250,24 @@ void InitPositions()
 {
 	MaxSoundDistance = abs(sqrt(pow(SIZE - 1, 2) + pow(SIZE - 1, 2)));
 
-	playerPosition.x = 1;
-	playerPosition.y = 8;
-	playerPosition.dir = DIR_UP;
-	map[playerPosition.y][playerPosition.x] = PLAYER;
-	monsterPosition.x = 4;
-	monsterPosition.y = 3;
-	monsterPosition.dir = DIR_DOWN;
-	map[monsterPosition.y][monsterPosition.x] = MONSTER;
-	exitPosition.x = 9;
-	exitPosition.y = 9;
-	exitPosition.dir = DIR_DOWN;
-	map[exitPosition.y][exitPosition.x] = EXIT;
+	// Init player object
+	playerObj.pos.x = 1;
+	playerObj.pos.y = 8;
+	playerObj.dir = DIR_UP;
+	map[playerObj.pos.y][playerObj.pos.x] = PLAYER;
+
+	// Init monster object
+	monsterObj.pos.x = 4;
+	monsterObj.pos.y = 3;
+	monsterObj.dir = DIR_DOWN;
+	map[monsterObj.pos.y][monsterObj.pos.x] = MONSTER;
+
+	// Init exit object
+	exitObj.pos.x = 9;
+	exitObj.pos.y = 9;
+	exitObj.dir = DIR_DOWN;
+	map[exitObj.pos.y][exitObj.pos.x] = EXIT;
+
 	updatePositions();
 }
 void LoadSounds()
@@ -311,15 +310,15 @@ int main(int argc, char* args[])
 
 	while (!ExitGame)
 	{
-		Position* newPosition = GetPlayerInput();
+		Object* newObj = GetPlayerInput();
 
-		if (newPosition != NULL)
+		if (newObj != NULL)
 		{			
-			Grid newPlace = GetGridBox(newPosition);
+			Grid newPlace = GetGridBox(newObj);
 			switch (newPlace)
 			{
 				case Empty:
-					UpdatePlayerPosition(newPosition);
+					UpdatePlayerPosition(newObj);
 					step.Play();
 					monster.SetPosition(MonsterAngle, MonsterDistance);
 					waterfall.SetPosition(WaterfallAngle,WaterfallDistance);
@@ -342,11 +341,9 @@ int main(int argc, char* args[])
 					break;
 			}
 			PrintMap();
-			delete newPosition;
+			delete newObj;
 		}
 	}
-
-	cout << "*****************************" << endl;
 
 	if(GameResult)
 	{
