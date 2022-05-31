@@ -9,7 +9,7 @@
 
 using namespace std;
 #define SIZE 10
-enum GameEntity { Empty, PLAYER, MONSTER, WALL, EXIT };
+enum Grid { Empty, PLAYER, MONSTER, WALL, EXIT };
 enum  Direction { DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT };
 struct Position
 {
@@ -35,7 +35,7 @@ SoundEffect monsterStep;
 SoundEffect waterfall;
 
 
-GameEntity map[SIZE][SIZE] = { // 10x10 matrix
+Grid map[SIZE][SIZE] = { // 10x10 matrix
 	{ Empty, Empty, Empty, WALL , Empty, Empty, Empty, Empty, Empty, Empty },
 	{ Empty, Empty, Empty, WALL , Empty, Empty, Empty, Empty, Empty, Empty },
 	{ Empty, WALL , Empty, WALL , Empty, Empty, Empty, Empty, Empty, Empty },
@@ -103,8 +103,6 @@ void updatePositions()
 }
 void PrintMap()
 {
-	cout << "*****************************" << endl << endl << endl;
-
 	for (int y = 0; y < SIZE; y++)
 	{
 		for (int x = 0; x < SIZE; x++)
@@ -115,53 +113,14 @@ void PrintMap()
 	}
 
 	cout << endl << endl;
-	std::cout << "[Moster] SDL angle " << MonsterAngle << " SDL distance " << MonsterDistance << endl;
-	std::cout << "[Waterfall] SDL angle " << WaterfallAngle << " SDL distance " << WaterfallDistance << endl;
-	string direction;
-	switch (playerPosition.dir)
-	{
-	case DIR_UP:	direction = "UP"; break;
-	case DIR_RIGHT:	direction = "RIGHT"; break;
-	case DIR_DOWN:	direction = "DOWN"; break;
-	case DIR_LEFT:	direction = "LEFT"; break;
-	}
-	std::cout << "[Player] direction " << direction << endl;
 }
-GameEntity Find(Position* pos)
+Grid GetGridBox(Position* pos)
 {
 	if(pos->x < 0 || pos->x >= SIZE || pos->y < 0 || pos->y >= SIZE)
 	{
 		return WALL;
 	}
 	return map[pos->y][pos->x];
-}
-void TurnPlayer(bool turnLeft)
-{
-	if (turnLeft)
-	{
-		switch (playerPosition.dir)
-		{
-			case DIR_UP:	playerPosition.dir = DIR_LEFT; break;
-			case DIR_RIGHT:	playerPosition.dir = DIR_UP; break;
-			case DIR_DOWN:	playerPosition.dir = DIR_RIGHT; break;
-			case DIR_LEFT:	playerPosition.dir = DIR_DOWN; break;
-		}
-	}
-	else 
-	{
-		switch (playerPosition.dir)
-		{
-			case DIR_UP:	playerPosition.dir = DIR_RIGHT; break;
-			case DIR_LEFT:	playerPosition.dir = DIR_UP; break;
-			case DIR_DOWN:	playerPosition.dir = DIR_LEFT; break;
-			case DIR_RIGHT:	playerPosition.dir = DIR_DOWN; break;
-		}
-	}
-
-	step.Play();
-	updatePositions();
-	PrintMap();
-
 }
 Position* GetPlayerInput()
 {
@@ -170,55 +129,38 @@ Position* GetPlayerInput()
 	SDL_Scancode key;
 	while (SDL_PollEvent(&test_event)) {
 		switch (test_event.type) {
-		case SDL_KEYDOWN:
-			key = test_event.key.keysym.scancode;
-			if (key == SDL_SCANCODE_ESCAPE) {
-				ExitGame = true;
-			}
-			else if ((key == SDL_SCANCODE_UP) || (key == SDL_SCANCODE_W))
-			{
+			case SDL_KEYDOWN:
+				key = test_event.key.keysym.scancode;
 				position = new Position();
 				position->x = playerPosition.x;
 				position->y = playerPosition.y;
 				position->dir = playerPosition.dir;
-				int x, y;
-				switch(playerPosition.dir)
-				{
-					case DIR_UP:
-						x = 0;
-						y = -1;
-						break;
-					case DIR_DOWN:
-						x = 0;
-						y = 1;
-						break;
-					case DIR_LEFT:
-						x = -1;
-						y = 0;
-						break;
-					case DIR_RIGHT:
-						x = 1;
-						y = 0;
-						break;
+
+				if (key == SDL_SCANCODE_ESCAPE) {
+					ExitGame = true;
 				}
-				position->x += x;
-				position->y += y;
+				
+				if (key == SDL_SCANCODE_UP)
+				{
+					position->y -= 1;
+				}			
+				else if (key == SDL_SCANCODE_LEFT)
+				{
+					position->x -= 1;
+				}
+				else if (key == SDL_SCANCODE_RIGHT)
+				{
+					position->x += 1;
+				}
+				else if (key == SDL_SCANCODE_DOWN) {
+					position->y += 1;
+				}
+				break;
 
-			}			
-			else if ((key == SDL_SCANCODE_LEFT) || (key == SDL_SCANCODE_A))
-			{
-				TurnPlayer(true);
+			case SDL_QUIT:
+				ExitGame = true;
+				break;
 			}
-			else if ((key == SDL_SCANCODE_RIGHT) || (key == SDL_SCANCODE_D))
-			{
-				TurnPlayer(false);
-			}
-			break;
-
-		case SDL_QUIT:
-			ExitGame = true;
-			break;
-		}
 	}
 	return position;
 }
@@ -299,7 +241,7 @@ void ChangeMonsterPosition()
 		newPosition.x += x;
 		newPosition.y += y;
 		newPosition.dir = dir;
-		auto newPlace = Find(&newPosition);
+		auto newPlace = GetGridBox(&newPosition);
 		if(newPlace == Empty)
 		{
 			UpdateMonsterPosition(&newPosition);
@@ -373,7 +315,7 @@ int main(int argc, char* args[])
 
 		if (newPosition != NULL)
 		{			
-			GameEntity newPlace = Find(newPosition);
+			Grid newPlace = GetGridBox(newPosition);
 			switch (newPlace)
 			{
 				case Empty:
