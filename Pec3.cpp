@@ -115,6 +115,8 @@ void PrintMap()
 		std::cout << endl;
 	}
 	cout << endl << endl;
+	std::cout << "[MoNster] SDL angle " << MonsterAngle << " SDL distance " << MonsterDistance << endl;
+	std::cout << "[Waterfall] SDL angle " << WaterfallAngle << " SDL distance " << WaterfallDistance << endl;
 }
 Grid GetGridBox(Object* obj)
 {
@@ -145,17 +147,21 @@ Object* GetPlayerInput()
 				if (key == SDL_SCANCODE_UP)
 				{
 					obj->pos.y -= 1;
+					obj->dir = DIR_UP;
 				}			
 				else if (key == SDL_SCANCODE_LEFT)
 				{
 					obj->pos.x -= 1;
+					obj->dir = DIR_LEFT;
 				}
 				else if (key == SDL_SCANCODE_RIGHT)
 				{
 					obj->pos.x += 1;
+					obj->dir = DIR_RIGHT;
 				}
 				else if (key == SDL_SCANCODE_DOWN) {
 					obj->pos.y += 1;
+					obj->dir = DIR_DOWN;
 				}
 				break;
 
