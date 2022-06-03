@@ -117,6 +117,15 @@ void PrintMap()
 	cout << endl << endl;
 	std::cout << "[MoNster] SDL angle " << MonsterAngle << " SDL distance " << MonsterDistance << endl;
 	std::cout << "[Waterfall] SDL angle " << WaterfallAngle << " SDL distance " << WaterfallDistance << endl;
+
+	if(playerObj.dir == DIR_UP)
+		std::cout << "[Player] direction " << "LOOKING UP" << endl;
+	else if(playerObj.dir == DIR_RIGHT)
+		std::cout << "[Player] direction " << "LOOKING RIGHT" << endl;
+	else if (playerObj.dir == DIR_LEFT)
+		std::cout << "[Player] direction " << "LOOKING LEFT" << endl;
+	else
+		std::cout << "[Player] direction " << "LOOKING DOWN" << endl;
 }
 Grid GetGridBox(Object* obj)
 {
@@ -125,6 +134,39 @@ Grid GetGridBox(Object* obj)
 		return WALL;
 	}
 	return map[obj->pos.y][obj->pos.x];
+}
+void Turn(bool turnRight) {
+	if (turnRight) {
+		if (playerObj.dir == DIR_UP) {
+			playerObj.dir = DIR_RIGHT;
+		}
+		else if (playerObj.dir == DIR_RIGHT) {
+			playerObj.dir = DIR_DOWN;
+		}
+		else if (playerObj.dir == DIR_DOWN) {
+			playerObj.dir = DIR_LEFT;
+		}
+		else {
+			playerObj.dir = DIR_UP;
+		}
+	}
+	else {
+		if (playerObj.dir == DIR_UP) {
+			playerObj.dir = DIR_LEFT;
+		}
+		else if (playerObj.dir == DIR_RIGHT) {
+			playerObj.dir = DIR_UP;
+		}
+		else if (playerObj.dir == DIR_DOWN) {
+			playerObj.dir = DIR_RIGHT;
+		}
+		else {
+			playerObj.dir = DIR_DOWN;
+		}
+	}
+
+	step.Play();
+	updatePositions();
 }
 Object* GetPlayerInput()
 {
@@ -146,22 +188,27 @@ Object* GetPlayerInput()
 				
 				if (key == SDL_SCANCODE_UP)
 				{
-					obj->pos.y -= 1;
-					obj->dir = DIR_UP;
+					if (playerObj.dir == DIR_UP) {
+						obj->pos.y -= 1;
+					}
+					else if (playerObj.dir == DIR_RIGHT) {
+						obj->pos.x += 1;
+					}
+					else if (playerObj.dir == DIR_LEFT) {
+						obj->pos.x -= 1;
+					}
+					else {
+						obj->pos.y += 1;
+					}
+
 				}			
 				else if (key == SDL_SCANCODE_LEFT)
 				{
-					obj->pos.x -= 1;
-					obj->dir = DIR_LEFT;
+					Turn(false);
 				}
 				else if (key == SDL_SCANCODE_RIGHT)
 				{
-					obj->pos.x += 1;
-					obj->dir = DIR_RIGHT;
-				}
-				else if (key == SDL_SCANCODE_DOWN) {
-					obj->pos.y += 1;
-					obj->dir = DIR_DOWN;
+					Turn(true);
 				}
 				break;
 
@@ -281,9 +328,9 @@ void LoadSounds()
 	death.Init("death.wav");
 	gameOver.Init("gameOver.wav");
 	wall.Init("shock-wall.wav");
-	wall.SetVolume(32);
+	wall.SetVolume(100);
 	step.Init("step-human.wav");
-	step.SetVolume(32);
+	step.SetVolume(100);
 	victory.Init("victory.wav");
 	monster.Init("Monster-Snoring.wav");
 	monsterStep.Init("step-monster.wav");
