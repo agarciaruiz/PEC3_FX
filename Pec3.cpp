@@ -238,7 +238,7 @@ void SetGameOver()
 	monster.Stop();
 	waterfall.Stop();
 	death.PlayAndWait();
-	gameOver.Play();
+	gameOver.PlayAndWait();
 	ExitGame = true;
 }
 void ChangeMonsterPosition()
@@ -325,16 +325,16 @@ void InitPositions()
 }
 void LoadSounds()
 {
-	death.Init("death.wav");
+	death.Init("PEC3_Sounds/Monster_Eating.wav");
 	gameOver.Init("gameOver.wav");
-	wall.Init("shock-wall.wav");
+	wall.Init("PEC3_Sounds/Wall_Impact.wav");
 	wall.SetVolume(100);
-	step.Init("step-human.wav");
+	step.Init("PEC3_Sounds/Step.wav");
 	step.SetVolume(100);
 	victory.Init("victory.wav");
-	monster.Init("Monster-Snoring.wav");
-	monsterStep.Init("step-monster.wav");
-	waterfall.Init("waterfall.wav");
+	monster.Init("PEC3_Sounds/Monster_Snoring.wav");
+	monsterStep.Init("PEC3_Sounds/Monster_Step.wav");
+	waterfall.Init("PEC3_Sounds/Waterfall.wav");
 }
 
 int main(int argc, char* args[])
@@ -400,11 +400,11 @@ int main(int argc, char* args[])
 
 	if(GameResult)
 	{
-		cout << "Ves la luz del sol, has conseguido escapar de una pieza!" << endl;
+		cout << "VICTORY! YOU MANAGED TO ESCAPE THE CAVE ;)" << endl;
 	}
 	else
 	{
-		cout << "No es un buen destino el tuyo, eres comida para monstruo!" << endl;
+		cout << "GAME OVER! THE MONSTER HAS EATEN YOU :(" << endl;
 	}
 	//Destroy window
 	SDL_DestroyWindow(gWindow);

@@ -39,6 +39,24 @@
     <Media Include="..\Sonidos_Cueva\waterfall.wav">
       <Filter>Resource Files</Filter>
     </Media>
+    <Media Include="PEC3_Sounds\Monster_Eating.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="PEC3_Sounds\Monster_Snoring.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="PEC3_Sounds\Monster_Step.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="PEC3_Sounds\Step.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="PEC3_Sounds\Wall_Impact.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="PEC3_Sounds\Waterfall.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SoundEffect.h">

@@ -150,6 +150,12 @@
     <Media Include="..\Sonidos_Cueva\step-monster.wav" />
     <Media Include="..\Sonidos_Cueva\victory.wav" />
     <Media Include="..\Sonidos_Cueva\waterfall.wav" />
+    <Media Include="PEC3_Sounds\Monster_Eating.wav" />
+    <Media Include="PEC3_Sounds\Monster_Snoring.wav" />
+    <Media Include="PEC3_Sounds\Monster_Step.wav" />
+    <Media Include="PEC3_Sounds\Step.wav" />
+    <Media Include="PEC3_Sounds\Wall_Impact.wav" />
+    <Media Include="PEC3_Sounds\Waterfall.wav" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SoundEffect.h" />
