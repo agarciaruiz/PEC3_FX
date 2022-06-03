@@ -115,7 +115,7 @@ void PrintMap()
 		std::cout << endl;
 	}
 	cout << endl << endl;
-	std::cout << "[MoNster] SDL angle " << MonsterAngle << " SDL distance " << MonsterDistance << endl;
+	std::cout << "[Monster] SDL angle " << MonsterAngle << " SDL distance " << MonsterDistance << endl;
 	std::cout << "[Waterfall] SDL angle " << WaterfallAngle << " SDL distance " << WaterfallDistance << endl;
 
 	if(playerObj.dir == DIR_UP)
@@ -233,12 +233,18 @@ void UpdateMonsterPosition(Object* newObj)
 	map[monsterObj.pos.y][monsterObj.pos.x] = MONSTER;
 	updatePositions();
 }
-void SetGameOver()
+void SetGameOver(bool isDead)
 {
 	monster.Stop();
 	waterfall.Stop();
-	death.PlayAndWait();
-	gameOver.PlayAndWait();
+	if (isDead) {
+		death.PlayAndWait();
+		gameOver.PlayAndWait();
+	}
+	else {
+		victory.PlayAndWait();
+		GameResult = true;
+	}
 	ExitGame = true;
 }
 void ChangeMonsterPosition()
@@ -295,7 +301,7 @@ void ChangeMonsterPosition()
 		}else if(newPlace == PLAYER)
 		{
 			validTile = true;
-			SetGameOver();
+			SetGameOver(true);
 		}
 	} while (!validTile);
 }
@@ -326,12 +332,12 @@ void InitPositions()
 void LoadSounds()
 {
 	death.Init("PEC3_Sounds/Monster_Eating.wav");
-	gameOver.Init("gameOver.wav");
+	gameOver.Init("PEC3_Sounds/gameOver.wav");
 	wall.Init("PEC3_Sounds/Wall_Impact.wav");
 	wall.SetVolume(100);
 	step.Init("PEC3_Sounds/Step.wav");
 	step.SetVolume(100);
-	victory.Init("victory.wav");
+	victory.Init("PEC3_Sounds/victory.wav");
 	monster.Init("PEC3_Sounds/Monster_Snoring.wav");
 	monsterStep.Init("PEC3_Sounds/Monster_Step.wav");
 	waterfall.Init("PEC3_Sounds/Waterfall.wav");
@@ -383,14 +389,10 @@ int main(int argc, char* args[])
 					monster.SetPosition(MonsterAngle, MonsterDistance);
 					break;
 				case MONSTER:
-					SetGameOver();
+					SetGameOver(true);
 					break;
 				case EXIT:
-					monster.Stop();
-					waterfall.Stop();
-					victory.PlayAndWait();
-					GameResult = true;
-					ExitGame = true;
+					SetGameOver(false);
 					break;
 			}
 			PrintMap();
